@@ -8,9 +8,11 @@ import org.hibernate.Transaction;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class UserDaoHibernateImpl implements UserDao {
     private static final SessionFactory sessionFactory = Util.getSession();
+    private static final Logger logger = Logger.getLogger(UserDaoHibernateImpl.class.getName());
 
     public UserDaoHibernateImpl() {
 
@@ -27,9 +29,10 @@ public class UserDaoHibernateImpl implements UserDao {
                     "lastName VARCHAR(45) NOT NULL, " +
                     "age INT(3) NOT NULL," +
                     "PRIMARY KEY(id))").executeUpdate();
+            logger.info("Table created successfully");
             session.getTransaction().commit();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warning("Error creating table");
         }
     }
 
@@ -51,12 +54,13 @@ public class UserDaoHibernateImpl implements UserDao {
             transaction = session.beginTransaction();
             User user = new User(name, lastName, age);
             session.save(user);
+            logger.info("User добавлен в базу данных");
             session.getTransaction().commit();
         } catch (Exception e) {
             if (transaction != null) {
                 transaction.rollback();
             }
-            e.printStackTrace();
+            logger.warning("Ошибка при сохранении пользователя");
         }
     }
 
@@ -85,8 +89,9 @@ public class UserDaoHibernateImpl implements UserDao {
             users = session.createQuery("from User").getResultList();
             session.getTransaction().commit();
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.warning("Error getting all users from the database");
         }
+        logger.info("Returning user list with size");
         return users;
     }
 
@@ -97,12 +102,13 @@ public class UserDaoHibernateImpl implements UserDao {
         try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             session.createQuery("delete User").executeUpdate();
+            logger.info("Users table cleaned successfully");
             session.getTransaction().commit();
         } catch (Exception e) {
             if (transaction != null) {
                 transaction.rollback();
             }
-            e.printStackTrace();
+            logger.warning("Error cleaning users table");
         }
     }
 }
